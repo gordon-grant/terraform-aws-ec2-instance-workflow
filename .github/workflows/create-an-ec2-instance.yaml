@@ -6,7 +6,7 @@ on:
       ec2_name:
         description: EC2 name
         required: true
-        default: 'App Server'
+        default: "App Server"
         type: string
       ec2_instance_type:
         description: EC2 instance type
@@ -27,9 +27,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: "14"
 
-      - name: Log starting of EC2 Instance creation 
+      - name: Log starting of EC2 Instance creation
         uses: port-labs/port-github-action@v1
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
@@ -37,29 +37,29 @@ jobs:
           operation: PATCH_RUN
           runId: ${{ fromJson(inputs.port_context).rund_id }}
           logMessage: |
-              About to create ec2 instance ${{ github.event.inputs.ec2_name }} .. ⛴️
+            About to create ec2 instance ${{ github.event.inputs.ec2_name }} .. ⛴️
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: '${{ secrets.TF_USER_AWS_KEY }}'
-          aws-secret-access-key: '${{ secrets.TF_USER_AWS_SECRET }}'
-          aws-region: '${{ secrets.TF_USER_AWS_REGION }}'
+          aws-access-key-id: "${{ secrets.TF_USER_AWS_KEY }}"
+          aws-secret-access-key: "${{ secrets.TF_USER_AWS_SECRET }}"
+          aws-region: "${{ secrets.TF_USER_AWS_REGION }}"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_wrapper: false
-          
+
       - name: Terraform Apply
-        id:   apply
+        id: apply
         env:
-          TF_VAR_ec2_name:  "${{ github.event.inputs.ec2_name }}"
+          TF_VAR_ec2_name: "${{ github.event.inputs.ec2_name }}"
           TF_VAR_pem_key_name: "${{ github.event.inputs.pem_key_name}}"
           TF_VAR_aws_region: "${{ secrets.TF_USER_AWS_REGION }}"
           TF_VAR_ec2_instance_type: "${{ github.event.inputs.ec2_instance_type}}"
         run: |
-          cd <TERRAFORM-TEMPLATE-DIR>
+          cd tf-template
           terraform init
           terraform validate
           terraform plan 
@@ -68,7 +68,7 @@ jobs:
       - name: Set Outputs
         id: set_outputs
         run: |
-          cd <TERRAFORM-TEMPLATE-DIR>
+          cd tf-template
           echo "instance_id=$(terraform output -raw instance_id)" >> $GITHUB_ENV
           echo "instance_state=$(terraform output -raw instance_state)" >> $GITHUB_ENV
           echo "instance_type=$(terraform output -raw instance_type)" >> $GITHUB_ENV
@@ -93,9 +93,9 @@ jobs:
           operation: PATCH_RUN
           runId: ${{ fromJson(inputs.port_context).rund_id }}
           logMessage: |
-              EC2 Instance created successfully ✅
+            EC2 Instance created successfully ✅
 
-     - name: Report Created Instance to Port
+      - name: Report Created Instance to Port
         uses: port-labs/port-github-action@v1
         with:
           clientId: ${{ secrets.PORT_CLIENT_ID }}
@@ -104,7 +104,7 @@ jobs:
           operation: PATCH_RUN
           runId: ${{ fromJson(inputs.port_context).rund_id }}
           logMessage: "Upserting created EC2 Instance to Port ... "
-          
+
       - name: UPSERT EC2 Instance Entity
         uses: port-labs/port-github-action@v1
         with:
